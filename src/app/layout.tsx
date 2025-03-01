@@ -9,8 +9,12 @@ import { SiteFooter } from "@/components/site-footer"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Fuzzsjakk Festival",
-  description: "En unik musikkopplevelse i hjertet av Norge",
+  title: "Fuzzsjakk",
+  description: "Where Chess Meets Nightlife",
+  robots: {
+    index: false,
+    follow: false,
+  },
 }
 
 export default function RootLayout({
@@ -20,6 +24,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="no" suppressHydrationWarning>
+      <head>
+        <meta name="robots" content="noindex,nofollow" />
+      </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <div className="flex min-h-screen flex-col">
