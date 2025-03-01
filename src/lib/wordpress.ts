@@ -126,31 +126,89 @@ export async function getPostBySlug(slug: string) {
 }
 
 export async function getEvents() {
-  const data = await fetchAPI(`
-    query Events {
-      events(first: 100, where: { orderby: { field: DATE, order: ASC } }) {
-        nodes {
-          id
-          title
-          slug
-          featuredImage {
-            node {
-              sourceUrl
-              altText
+  try {
+    const data = await fetchAPI(`
+      query Events {
+        events(first: 100, where: { orderby: { field: DATE, order: ASC } }) {
+          nodes {
+            id
+            title
+            slug
+            excerpt
+            featuredImage {
+              node {
+                sourceUrl
+                altText
+              }
             }
-          }
-          acf {
-            eventDate
-            location
-            ticketUrl
-            isHighlighted
+            events {
+              dato
+              lokasjon
+              lenkeTilBillett
+              fremhevet
+            }
           }
         }
       }
-    }
-  `)
+    `)
 
-  return data?.events?.nodes || []
+    return data?.events?.nodes || []
+  } catch (error) {
+    console.error("Error fetching events:", error)
+    return []
+  }
+}
+
+export async function getEventBySlug(slug: string) {
+  const data = await fetchAPI(
+    `
+    query EventBySlug($slug: ID!) {
+      event(id: $slug, idType: SLUG) {
+        id
+        title
+        slug
+        content
+        excerpt
+        featuredImage {
+          node {
+            sourceUrl
+            altText
+          }
+        }
+        events {
+          dato
+          lokasjon
+          lenkeTilBillett
+          fremhevet
+        }
+      }
+    }
+  `,
+    {
+      variables: { slug },
+    },
+  )
+
+  const event = data?.event
+  if (!event) return null
+
+  return {
+    id: event.id,
+    title: event.title,
+    slug: event.slug,
+    content: event.content,
+    excerpt: event.excerpt,
+    featuredImage: event.featuredImage?.node
+      ? {
+          sourceUrl: event.featuredImage.node.sourceUrl,
+          altText: event.featuredImage.node.altText,
+        }
+      : null,
+    date: event.events.dato,
+    location: event.events.lokasjon,
+    ticketUrl: event.events.lenkeTilBillett,
+    isFeatured: event.events.fremhevet,
+  }
 }
 
 const SAMPLE_POSTS = [
