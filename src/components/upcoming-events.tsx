@@ -1,73 +1,104 @@
 import Link from "next/link"
-import { CalendarDays, MapPin } from "lucide-react"
+import Image from "next/image"
+import { CalendarDays, MapPin, Ticket } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 
-// This is temporary sample data - we'll replace it with real data from WordPress
-const events = [
-  {
-    id: 1,
-    title: "Fuzzsjakk Festival 2024",
-    date: "2024-07-15",
-    location: "Oslo, Norge",
-    description: "Årets største musikkfestival med artister fra hele verden.",
-  },
-  {
-    id: 2,
-    title: "Pre-Festival Workshop",
-    date: "2024-07-14",
-    location: "Oslo, Norge",
-    description: "Lær fra profesjonelle musikere før festivalen starter.",
-  },
-  {
-    id: 3,
-    title: "Etterslep: Fuzzsjakk Reunion",
-    date: "2024-07-16",
-    location: "Oslo, Norge",
-    description: "En spesiell samling for festivaldeltakere og artister.",
-  },
-]
+interface Event {
+  id: string
+  title: string
+  slug: string
+  excerpt: string
+  featuredImage?: {
+    sourceUrl: string
+    altText: string
+  }
+  events: {
+    dato: string
+    lokasjon: string
+    lenkeTilBillett?: string
+    fremhevet: boolean
+  }
+}
 
-export function UpcomingEvents() {
+interface UpcomingEventsProps {
+  events?: Event[]
+}
+
+export function UpcomingEvents({ events = [] }: UpcomingEventsProps) {
   return (
     <section className="py-12">
       <div className="mb-8 text-center">
         <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Kommende Arrangementer</h2>
         <p className="mt-4 text-lg text-muted-foreground">Ikke gå glipp av årets beste musikkopplevelser</p>
       </div>
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {events.map((event) => (
-          <Card key={event.id}>
-            <CardHeader>
-              <CardTitle className="line-clamp-2">{event.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-4 space-y-2">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <CalendarDays className="h-4 w-4" />
-                  <time dateTime={event.date}>
-                    {new Date(event.date).toLocaleDateString("no-NO", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </time>
+
+      {events.length === 0 ? (
+        <div className="text-center text-muted-foreground">Ingen kommende arrangementer for øyeblikket.</div>
+      ) : (
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          {events.map((event) => (
+            <Card key={event.id} className="flex flex-col">
+              {event.featuredImage && (
+                <div className="relative aspect-video overflow-hidden">
+                  <Image
+                    src={event.featuredImage.sourceUrl || "/placeholder.svg"}
+                    alt={event.featuredImage.altText || event.title}
+                    fill
+                    className="object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                  {event.events.fremhevet && (
+                    <Badge className="absolute right-2 top-2" variant="secondary">
+                      Fremhevet
+                    </Badge>
+                  )}
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
-                  <span>{event.location}</span>
+              )}
+              <CardHeader>
+                <CardTitle className="line-clamp-2">
+                  <Link href={`/arrangementer/${event.slug}`} className="hover:underline">
+                    {event.title}
+                  </Link>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-4 space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CalendarDays className="h-4 w-4" />
+                    <time dateTime={event.events.dato}>{event.events.dato}</time>
+                  </div>
+                  {event.events.lokasjon && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <MapPin className="h-4 w-4" />
+                      <span>{event.events.lokasjon}</span>
+                    </div>
+                  )}
                 </div>
-              </div>
-              <p className="line-clamp-2 text-sm text-muted-foreground">{event.description}</p>
-            </CardContent>
-            <CardFooter>
-              <Button asChild className="w-full">
-                <Link href={`/arrangementer/${event.id}`}>Les Mer</Link>
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+                <div
+                  className="line-clamp-2 text-sm text-muted-foreground"
+                  dangerouslySetInnerHTML={{ __html: event.excerpt }}
+                />
+              </CardContent>
+              <CardFooter className="mt-auto">
+                {event.events.lenkeTilBillett ? (
+                  <Button asChild className="w-full gap-2">
+                    <a href={event.events.lenkeTilBillett} target="_blank" rel="noopener noreferrer">
+                      <Ticket className="h-4 w-4" />
+                      Kjøp Billetter
+                    </a>
+                  </Button>
+                ) : (
+                  <Button asChild className="w-full">
+                    <Link href={`/arrangementer/${event.slug}`}>Les Mer</Link>
+                  </Button>
+                )}
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
+
       <div className="mt-8 text-center">
         <Button asChild variant="outline" size="lg">
           <Link href="/arrangementer">Se Alle Arrangementer</Link>
