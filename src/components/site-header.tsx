@@ -1,67 +1,100 @@
 "use client"
 
+import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
+import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { Search } from "lucide-react"
+import { cn } from "@/lib/utils"
+
+const navigation = [
+  { name: "Hjem", href: "/" },
+  { name: "Arrangementer", href: "/arrangementer" },
+  { name: "Blogg", href: "/blogg" },
+  { name: "Om", href: "/om" },
+  { name: "Butikk", href: "/butikk" },
+  { name: "FAQ", href: "/faq" },
+]
 
 export function SiteHeader() {
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
   const pathname = usePathname()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-6 md:gap-10">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-xl font-bold">Headless WP</span>
+      <nav className="container mx-auto flex h-16 items-center justify-between px-4">
+        <div className="flex lg:flex-1">
+          <Link href="/" className="-m-1.5 p-1.5 text-xl font-bold">
+            Fuzzsjakk
           </Link>
-          <nav className="hidden gap-6 md:flex">
-            <Link
-              href="/"
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary",
-                pathname === "/" ? "text-foreground" : "text-muted-foreground",
-              )}
-            >
-              Home
-            </Link>
-            <Link
-              href="/setup-guide"
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary",
-                pathname === "/setup-guide" ? "text-foreground" : "text-muted-foreground",
-              )}
-            >
-              Setup Guide
-            </Link>
-            <Link
-              href="/about"
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary",
-                pathname === "/about" ? "text-foreground" : "text-muted-foreground",
-              )}
-            >
-              About
-            </Link>
-            <Link
-              href="/contact"
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary",
-                pathname === "/contact" ? "text-foreground" : "text-muted-foreground",
-              )}
-            >
-              Contact
-            </Link>
-          </nav>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon">
-            <Search className="h-5 w-5" />
-            <span className="sr-only">Search</span>
+        <div className="flex lg:hidden">
+          <Button
+            variant="ghost"
+            className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5"
+            onClick={() => setMobileMenuOpen(true)}
+          >
+            <span className="sr-only">Open main menu</span>
+            <Menu className="h-6 w-6" aria-hidden="true" />
           </Button>
+        </div>
+        <div className="hidden lg:flex lg:gap-x-8">
+          {navigation.map((item) => (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-primary",
+                pathname === item.href ? "text-foreground" : "text-muted-foreground",
+              )}
+            >
+              {item.name}
+            </Link>
+          ))}
+        </div>
+        <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-4">
           <ThemeToggle />
+          <Button asChild>
+            <Link href="/butikk">Kjøp Billetter</Link>
+          </Button>
+        </div>
+      </nav>
+      <div className={cn("fixed inset-0 z-50 bg-background lg:hidden", mobileMenuOpen ? "block" : "hidden")}>
+        <div className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-background px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="-m-1.5 p-1.5 text-xl font-bold">
+              Fuzzsjakk
+            </Link>
+            <Button variant="ghost" className="-m-2.5 rounded-md p-2.5" onClick={() => setMobileMenuOpen(false)}>
+              <span className="sr-only">Close menu</span>
+              <X className="h-6 w-6" aria-hidden="true" />
+            </Button>
+          </div>
+          <div className="mt-6 flow-root">
+            <div className="-my-6 divide-y divide-gray-500/10">
+              <div className="space-y-2 py-6">
+                {navigation.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      "-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 hover:bg-accent",
+                      pathname === item.href ? "text-foreground" : "text-muted-foreground",
+                    )}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
+              <div className="py-6">
+                <Button asChild className="w-full">
+                  <Link href="/butikk">Kjøp Billetter</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </header>
